@@ -78,6 +78,26 @@ local function RemoteInfiniteRange(inst)
                 end
             end)
         end
+ codex/modify-winona-catapult-and-remote-for-global-control-pmoybu
+
+        local old_can_cast_fn = spellcaster.spelltestfn
+        spellcaster:SetCanCastFn(function(doer, target, pos, item)
+            if old_can_cast_fn ~= nil then
+                local result, reason = old_can_cast_fn(doer, target, pos, item)
+                if result then
+                    return result, reason
+                end
+            end
+            return true
+        end)
+
+        if inst.replica ~= nil and inst.replica.spellcaster ~= nil and inst.replica.spellcaster.SetCanCastFn ~= nil then
+            inst.replica.spellcaster:SetCanCastFn(function()
+                return true
+            end)
+        end
+=======
+ main
     end
 end
 
