@@ -62,6 +62,30 @@ end
 
 AddPrefabPostInit("winona_catapult", ExtendCatapult)
 
+local function IsRangeFailureReason(reason)
+    if reason == nil then
+        return true
+    end
+
+    local reason_type = type(reason)
+    if reason_type == "string" then
+        local lowered = reason:lower()
+        return lowered:find("range", 1, true) ~= nil
+            or lowered:find("distance", 1, true) ~= nil
+            or lowered:find("far", 1, true) ~= nil
+    elseif reason_type == "table" then
+        -- Spell failure reasons sometimes arrive as tables with a message field.
+        if type(reason.message) == "string" then
+            local lowered = reason.message:lower()
+            return lowered:find("range", 1, true) ~= nil
+                or lowered:find("distance", 1, true) ~= nil
+                or lowered:find("far", 1, true) ~= nil
+        end
+    end
+
+    return false
+end
+
 local function RemoteInfiniteRange(inst)
     if GLOBAL.TheWorld.ismastersim then
         local spellcaster = inst.components.spellcaster
@@ -79,7 +103,7 @@ local function RemoteInfiniteRange(inst)
             spellcaster:SetCanCastFn(function(doer, target, pos, item)
                 if old_can_cast_fn ~= nil then
                     local result, reason = old_can_cast_fn(doer, target, pos, item)
-                    if result then
+                    if result or not IsRangeFailureReason(reason) then
                         return result, reason
                     end
                 end
